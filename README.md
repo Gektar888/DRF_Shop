@@ -14,6 +14,10 @@ git clone https://github.com/ShairbekovBakyt/DRF_Shop
 ```
 cd DRF_Shop
 ```
+# install requirements.txt
+```
+pip install -r requirements.txt
+```
 # makemigrations && migrate
 ```
 python3 manage.py makemigrations

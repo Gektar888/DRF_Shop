@@ -19,7 +19,20 @@ cd DRF_Shop
 python3 manage.py makemigrations
 python3 manage.py migrate
 ```
+# create super user 
+```
+python3 manage.py createsuperuser
+```
+# Run server
+```
+python3 manage.py drf_create_token name_of_super_user
+```
+# Run test
+```
+python3 manage.py test
+```
 # Run server
 ```
 python3 manage.py runserver
 ```
+

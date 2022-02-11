@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/Written%20In-python-cyan?style=flat-square">
 </p>
 
-# DRF shop it Online Marketplace 
+# DRF shop it is Online Marketplace 
 
 # clone this repo 
 ```

@@ -23,7 +23,7 @@ python3 manage.py migrate
 ```
 python3 manage.py createsuperuser
 ```
-# Run server
+# generate token for user
 ```
 python3 manage.py drf_create_token name_of_super_user
 ```

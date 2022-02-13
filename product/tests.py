@@ -1,5 +1,9 @@
+from http import client
+from urllib import response
 from django.urls import path, reverse, include, resolve
 from django.test import SimpleTestCase
+from .models import Customer
+from product.models import Customer
 from .views import ProductView
 from rest_framework.test import APITestCase, APIClient
 from rest_framework.authtoken.models import Token
@@ -72,3 +76,64 @@ class CustomerDetailAPIViewTests(APITestCase):
     def test_delete_customer_authenticated(self):
         response = self.client.delete(self.customer_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+
+## Customer tests
+
+
+class TestSetUp(APITestCase):
+    pass
+    
+
+
+class TestView(TestSetUp):
+
+    def test_get_all_customers(self):
+        response = self.client.get(reverse('customer'))
+        self.assertEqual(response.status_code,200)
+
+    def test_get_detail_customer(self):
+        Customer.objects.create(
+            id=1,
+            name='test',
+            age=25,
+            comment='test_comment',
+            address='badaxshan',
+            number='+999429232')
+        response = self.client.get(reverse('customer_detail',args='1'))
+        self.assertEqual(response.status_code,200)
+    def test_post_customer(self):
+        customer_data = {
+            'name' :'test',
+            'age' : 25,
+            'comment' :'test_comment',
+            'address' :'badaxshan',
+            'number' : '+999429232'
+        }
+        response = self.client.post(reverse('customer'),customer_data)
+        self.assertEqual(response.status_code,201)
+
+    def test_put_customer(self):
+        Customer.objects.create(
+            id=6,
+            name='test',
+            age=25,
+            comment='test_comment',
+            address='badaxshan',
+            number='+999429232')
+        customer_data = {
+            'name' :'test_put',
+            'age' : 25,
+            'comment' :'test_comment',
+            'address' :'badaxshan',
+            'number' : '+999429232'
+        }
+        response = self.client.put(reverse('customer_detail',args='6'),customer_data)
+        self.assertEqual(response.status_code,200)
+
+        
+
+
+        
+

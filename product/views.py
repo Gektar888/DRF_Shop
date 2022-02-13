@@ -1,8 +1,8 @@
 from rest_framework import generics,permissions,status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import ProductSerializer
-from .models import Product
+from .serializers import CustomerSerializer, ProductSerializer
+from .models import Product , Customer
 from django.http import Http404
 from functools import wraps
 
@@ -56,5 +56,22 @@ class ProductDetailView(APIView):
         product =  Product.objects.get(pk=pk)
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CustomerListview(generics.ListCreateAPIView):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+
+class CustomerUpdateview(generics.UpdateAPIView):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+
+class CustomerRetrive(generics.RetrieveUpdateAPIView):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+
+class CustomerDelete(generics.RetrieveDestroyAPIView):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
 
 # Create your views here.

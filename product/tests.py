@@ -1,4 +1,5 @@
 from http import client
+from itertools import product
 from urllib import response
 from django.urls import path, reverse, include, resolve
 from django.test import SimpleTestCase
@@ -14,13 +15,13 @@ from rest_framework.views import APIView
 
 class ApiUrlsTests(SimpleTestCase):
 
-    def test_get_customers_is_resolved(self):
+    def test_get_product_is_resolved(self):
         url = reverse('product')
         self.assertEquals(resolve(url).func.view_class, ProductView)
 
 
-class CustomerAPIViewTests(APITestCase):
-    customers_url = reverse("product")
+class ProductAPIViewTests(APITestCase):
+    product = reverse("product")
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -30,19 +31,19 @@ class CustomerAPIViewTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
 
     def test_get_customers_authenticated(self):
-        response = self.client.get(self.customers_url)
+        response = self.client.get(self.product)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_customers_un_authenticated(self):
         self.client.force_authenticate(user=None, token=None)
-        response = self.client.get(self.customers_url)
+        response = self.client.get(self.product)
         self.assertEquals(response.status_code, 401)
 
     
 
-class CustomerDetailAPIViewTests(APITestCase):
-    customer_url = reverse('product-detail', args=[1])
-    customers_url = reverse("product")
+class ProductDetailAPIViewTests(APITestCase):
+    product_url = reverse('product-detail', args=[1])
+    products_url = reverse("product")
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -61,20 +62,20 @@ class CustomerDetailAPIViewTests(APITestCase):
         "rating": 5
     }
         self.client.post(
-            self.customers_url, data, format='json')
+            self.products_url, data, format='json')
 
     def test_get_customer_autheticated(self):
-        response = self.client.get(self.customer_url)
+        response = self.client.get(self.product_url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['name'], 'test5')
 
     def test_get_customer_un_authenticated(self):
         self.client.force_authenticate(user=None, token=None)
-        response = self.client.get(self.customer_url)
+        response = self.client.get(self.product_url)
         self.assertEqual(response.status_code, 401)
 
     def test_delete_customer_authenticated(self):
-        response = self.client.delete(self.customer_url)
+        response = self.client.delete(self.product_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 

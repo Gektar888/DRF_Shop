@@ -83,12 +83,9 @@ class ProductDetailAPIViewTests(APITestCase):
 ## Customer tests
 
 
-class TestSetUp(APITestCase):
-    pass
-    
 
 
-class TestView(TestSetUp):
+class TestView(APITestCase):
 
     def test_get_all_customers(self):
         response = self.client.get(reverse('customer'))
@@ -114,6 +111,7 @@ class TestView(TestSetUp):
         }
         response = self.client.post(reverse('customer'),customer_data)
         self.assertEqual(response.status_code,201)
+        self.assertEqual(response.data['name'],'test')
 
     def test_put_customer(self):
         Customer.objects.create(
@@ -132,6 +130,8 @@ class TestView(TestSetUp):
         }
         response = self.client.put(reverse('customer_detail',args='6'),customer_data)
         self.assertEqual(response.status_code,200)
+        self.assertEqual(response.data['name'],'test_put')
+
 
         
 

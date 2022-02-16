@@ -41,7 +41,7 @@ class Product(models.Model):
     title = models.CharField(max_length=255, verbose_name='Наименование')
     slug = models.SlugField(unique=True)
     comment = models.ForeignKey(Comment,on_delete=models.CASCADE,null=True,blank=True)
-    image = models.ImageField(verbose_name='Изображение')
+    image = models.ImageField(verbose_name='Изображение',blank=True)
     likes = models.IntegerField(verbose_name='лайки' ,default=0)
     views = models.PositiveIntegerField(verbose_name='просмотры',default=0)
     description = models.TextField(verbose_name='Описание', null=True)

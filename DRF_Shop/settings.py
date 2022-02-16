@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg',
+    'django_filters',
     #application
     'product',
     'rest_framework.authtoken'
@@ -79,6 +80,12 @@ WSGI_APPLICATION = 'DRF_Shop.wsgi.application'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
+        'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'mydatabase.db', 
+    }
+}
+'''
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_NAME'),
@@ -87,7 +94,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': 5432,
     }
-}
+'''
 
 
 # Password validation

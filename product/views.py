@@ -2,10 +2,13 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 from .serializers import ProductSerializer, CustomCategorySerializer
 from .models import Category, Product
 from .pagination import CategoryProductsPagination
+import django_filters
+
 
 from django.db.models import F
 
@@ -41,9 +44,13 @@ class CategoryViewSet(ModelViewSet):
 
 class ProductViewSet(ModelViewSet):
 
-    queryset = Product.objects.all()
+    queryset = Product.objec
+    ts.all()
     serializer_class = ProductSerializer
-
+    # filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    filter_backends = [filters.SearchFilter,DjangoFilterBackend]
+    filterset_fields = ['category', 'title','description','price__lte','price__gte']
+    search_fields = ['category', 'title','description']
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

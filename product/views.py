@@ -1,77 +1,91 @@
-from rest_framework import generics,permissions,status
-from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from .serializers import CustomerSerializer, ProductSerializer
-from .models import Product , Customer
-from django.http import Http404
-from functools import wraps
+from rest_framework.views import APIView
 
-class ProductView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+from .serializers import ProductSerializer, CustomCategorySerializer
+from .models import Category, Product
+from .pagination import CategoryProductsPagination
 
-    def get(self, request, format=None):
-        product = Product.objects.all()
-        serializer = ProductSerializer(product, many=True)
+from django.db.models import F
+
+from .utils import get_cart_and_products_in_cart
+
+
+class CategoryViewSet(ModelViewSet):
+
+    queryset = Category.objects
+    serializer_class = CustomCategorySerializer
+    permission_classes = []
+    authentication_classes = []
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @action(methods=["get"], detail=True)
+    def category_products(self, request, *args, **kwargs):
+        self.pagination_class = CategoryProductsPagination
+        products = Product.objects.filter(category=self.get_object())
+        cart, products_in_cart = get_cart_and_products_in_cart(request)
+        queryset = self.filter_queryset(products)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = ProductSerializer(page, many=True)
+            for product in serializer.data:
+                product['in_cart'] = True if product['id'] in products_in_cart else False
+            return self.get_paginated_response(serializer.data)
+
+        serializer = ProductSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def resource_checker(model):
-    def check_entity(fun):
-        @wraps(fun)
-        def inner_fun(*args, **kwargs):
-            try:
-                x = fun(*args, **kwargs)
-                return x
-            except model.DoesNotExist:
-                return Response({'message': 'Not Found'}, status=status.HTTP_204_NO_CONTENT)
-        return inner_fun
-    return check_entity
+class ProductViewSet(ModelViewSet):
 
-class ProductDetailView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-
-    @resource_checker(Product)
-    def get(self, request, pk, format=None):
-        product = Product.objects.get(pk=pk)
-        serializer = ProductSerializer(product)
-        return Response(serializer.data)
-
-    @resource_checker(Product)
-    def put(self, request, pk, format=None):
-        product = Product.objects.get(pk=pk)
-        serializer = ProductSerializer(product, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @resource_checker(Product)
-    def delete(self, request, pk, format=None):
-        product =  Product.objects.get(pk=pk)
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
 
-class CustomerListview(generics.ListCreateAPIView):
-    queryset = Customer.objects.all()
-    serializer_class = CustomerSerializer
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        cart, products_in_cart = get_cart_and_products_in_cart(request)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            serializer_data = serializer.data
+            if cart:
+                for product in serializer_data:
+                    product['in_cart'] = True if product['id'] in products_in_cart else False
+            return self.get_paginated_response(serializer_data)
 
-class CustomerUpdateview(generics.UpdateAPIView):
-    queryset = Customer.objects.all()
-    serializer_class = CustomerSerializer
+        serializer = self.get_serializer(queryset, many=True)
+        serializer_data = serializer.data
+        if cart:
+            for product in serializer_data:
+                product['in_cart'] = True if product['id'] in products_in_cart else False
+        return Response(serializer_data)
 
-class CustomerRetrive(generics.RetrieveUpdateAPIView):
-    queryset = Customer.objects.all()
-    serializer_class = CustomerSerializer
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        cart, products_in_cart = get_cart_and_products_in_cart(request)
+        serializer_data = serializer.data
+        if cart:
+            serializer_data['in_cart'] = False if instance.id not in products_in_cart else True
+        return Response(serializer_data)
 
-class CustomerDelete(generics.RetrieveDestroyAPIView):
-    queryset = Customer.objects.all()
-    serializer_class = CustomerSerializer
 
-# Create your views here.
+class CurrentUserView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return Response({'is_authenticated': True})
+        return Response({'is_authenticated': False})
+
+
+class UserAPIView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return Response({'is_authenticated': True})
+        return Response({'is_authenticated': False})
+

@@ -1,3 +1,4 @@
+from pyexpat import model
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -8,6 +9,7 @@ from .serializers import ProductSerializer, CustomCategorySerializer
 from .models import Category, Product
 from .pagination import CategoryProductsPagination
 import django_filters
+from django_filters import NumberFilter,FilterSet
 
 
 from django.db.models import F
@@ -42,15 +44,23 @@ class CategoryViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
+class ProductFilter(FilterSet):
+    min_price = NumberFilter(field_name='price', lookup_expr='gte')
+    max_price = NumberFilter(field_name='price', lookup_expr='lte')
+    class Meta:
+        model = Product
+        fields = ('category', 'title','description','min_price','max_price')    
+
+
 class ProductViewSet(ModelViewSet):
 
-    queryset = Product.objec
-    ts.all()
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    # filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
-    filter_backends = [filters.SearchFilter,DjangoFilterBackend]
-    filterset_fields = ['category', 'title','description','price__lte','price__gte']
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
     search_fields = ['category', 'title','description']
+    filter_class = ProductFilter
+    # 
+    
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
